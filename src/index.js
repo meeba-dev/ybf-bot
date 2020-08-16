@@ -1,23 +1,37 @@
 'use strict'
 
+const TelegramBot = require('node-telegram-bot-api');
+const http = require('http');
+const fs = require('fs');
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
-const http = require('http');
+const request = require('request');
+const {logStart} = require('./external');
+const config = require('./config.json');
 
 app.listen(PORT, () => {
 	console.log("YBF bot is running on port " + PORT);
 })
-
-const TelegramBot = require('node-telegram-bot-api');
-const request = require('request');
-const {debug} = require('./src/external');
-const {logStart} = require('./src/external');
-const {splitStr} = require('./src/external');
-const config = require('./src/config');
-
+var configPrivate;
+var bot;
+if (process.env.TELEGRAM_TOKEN) {
+  	bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {
+    	polling: true
+  });
+} 
+else {
+	configPrivate = JSON.parse(fs.readFileSync('src/config.json'));
+	bot = new TelegramBot(configPrivate.TELEGRAM_TOKEN, {
+		polling: true
+	});
+}
 logStart();
-const bot = new TelegramBot(config.TOKEN, {polling: true});
+
+
+const {debug} = require('./external');
+const {splitStr} = require('./external');
+
 
 //const mongoose = require('mongoose');
 /*
@@ -248,4 +262,4 @@ bot.on('callback_query', query => {
 bot.on("polling_error", (err) => console.log(err));
 
 http.createServer().listen(process.env.PORT || 5000).on('request', function(req, res) { res.end(''); });
-setInterval(function () {http.get('https://ybf-bot.herokuapp.com/'); }, 300000);
+setInterval(function () { http.get('https://ybf-bot.herokuapp.com/'); }, 300000);
