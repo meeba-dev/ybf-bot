@@ -7,8 +7,7 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const request = require('request');
-const {logStart} = require('./external');
-const config = require('./config.json');
+const {logStart} = require('./src/external');
 
 app.listen(PORT, () => {
 	console.log("YBF bot is running on port " + PORT);
@@ -29,8 +28,8 @@ else {
 logStart();
 
 
-const {debug} = require('./external');
-const {splitStr} = require('./external');
+const {debug} = require('./src/external');
+const {splitStr} = require('./src/external');
 
 
 //const mongoose = require('mongoose');
