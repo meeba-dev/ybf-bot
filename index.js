@@ -3,15 +3,9 @@
 const TelegramBot = require('node-telegram-bot-api');
 const http = require('http');
 const fs = require('fs');
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
 const request = require('request');
 const {logStart} = require('./src/external');
 
-app.listen(PORT, () => {
-	console.log("YBF bot is running on port " + PORT);
-})
 var configPrivate;
 var bot;
 if (process.env.TELEGRAM_TOKEN) {
@@ -260,5 +254,8 @@ bot.on('callback_query', query => {
 
 bot.on("polling_error", (err) => console.log(err));
 
-http.createServer().listen(process.env.PORT || 5000).on('request', function(req, res) { res.end(''); });
+http.createServer().listen(process.env.PORT || 5000).on('request', 
+function(req, res) { 
+	res.end('');
+ });
 setInterval(function () { http.get('https://ybf-bot.herokuapp.com/'); }, 300000);
