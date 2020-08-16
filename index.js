@@ -258,4 +258,4 @@ http.createServer().listen(process.env.PORT || 5000).on('request',
 function(req, res) { 
 	res.end('');
  });
-setInterval(function () { http.get('https://ybf-bot.herokuapp.com/'); }, 300000);
+setInterval(function () { http.get('http://ybf-bot.herokuapp.com/'); }, 300000);
