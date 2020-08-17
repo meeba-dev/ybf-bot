@@ -24,6 +24,7 @@ logStart();
 
 const {debug} = require('./src/external');
 const {splitStr} = require('./src/external');
+const { query } = require('express');
 
 
 //const mongoose = require('mongoose');
@@ -112,144 +113,145 @@ bot.onText(/\/finish/, (msg) => {
 	bot.sendMessage(msg.chat.id, "See you later Master!");
 });
 
-bot.on('callback_query', query => {
-
-	const chatId = query.message.chat.id;
-
-	switch(query.data) {
-		case 'create':
-			bot.sendMessage(chatId, 'Create' + '\n' + "Sorry, it's under construction");
-			/*
-			bot.sendMessage(chatId, 'Enter by scheme: {Product, Quantity, Weight}')
-			bot.onText(/(.+)/, (msg, [source, match]) => {
-				userInput = match;
-				var str = userInput.split(" ");
-				n = str[0];
-				q = str[1];
-				w = str[2];
-				var json = {name: str[0], quantity: str[1], weight: str[2]};
-				orders.push(json);
-				bot.sendMessage(chatId, orders.length);
-			});	
-			*/
-			break;		
-		case 'show':
-			bot.sendMessage(chatId, 'Show' + '\n' + "Sorry, it's under construction");
-			break;
-		case 'remove':
-			bot.sendMessage(chatId, 'Remove' + '\n' + "Sorry, it's under construction");
-			//orders = [];
-			//console.log('Current size is: ' + orders.length);
-			//bot.sendMessage(chatId, 'Shopping list was removed');
-			break;
-		case 'send':
-			bot.sendMessage(chatId, 'Send' + '\n' + "Sorry, it's under construction");
-			break;
-		case 'fiat':
-			bot.sendMessage(chatId, 'Choose the currency:', {
-				reply_markup: {
-					inline_keyboard: [
-							[
-								{
-									text: '$ USD',
-									callback_data: 'USD'
-								},
-								{
-									text: '€ EUR',
-									callback_data: 'EUR'
-								}
-							],
-							[
-								{
-									text: '£ GBP',
-									callback_data: 'GBP'
-								},
-								{
-									text: 'CFr CHF',
-									callback_data: 'CHF'
-								}
-							],
-							[
-								{
-									text: 'zł PLN',
-									callback_data: 'PLN'
-								},
-								{
-									text: 'Kč CZK',
-									callback_data: 'CZK'
-								}
-							],
-							[
-								{
-									text: '$ CAD',
-									callback_data: 'CAD'
-								},
-								{
-									text: '¥ CNY',
-									callback_data: 'CNY'
-								}
-							]	
-					]
+bot.on('callback_query', function(callbackQuery) {
+	bot.answerCallbackQuery(callbackQuery.id).then(function () {
+		const chatId = query.message.chat.id;
+		
+		switch(query.data) {
+			case 'create':
+				bot.sendMessage(chatId, 'Create' + '\n' + "Sorry, it's under construction");
+				/*
+				bot.sendMessage(chatId, 'Enter by scheme: {Product, Quantity, Weight}')
+				bot.onText(/(.+)/, (msg, [source, match]) => {
+					userInput = match;
+					var str = userInput.split(" ");
+					n = str[0];
+					q = str[1];
+					w = str[2];
+					var json = {name: str[0], quantity: str[1], weight: str[2]};
+					orders.push(json);
+					bot.sendMessage(chatId, orders.length);
+				});	
+				*/
+				break;		
+			case 'show':
+				bot.sendMessage(chatId, 'Show' + '\n' + "Sorry, it's under construction");
+				break;
+			case 'remove':
+				bot.sendMessage(chatId, 'Remove' + '\n' + "Sorry, it's under construction");
+				//orders = [];
+				//console.log('Current size is: ' + orders.length);
+				//bot.sendMessage(chatId, 'Shopping list was removed');
+				break;
+			case 'send':
+				bot.sendMessage(chatId, 'Send' + '\n' + "Sorry, it's under construction");
+				break;
+			case 'fiat':
+				bot.sendMessage(chatId, 'Choose the currency:', {
+					reply_markup: {
+						inline_keyboard: [
+								[
+									{
+										text: '$ USD',
+										callback_data: 'USD'
+									},
+									{
+										text: '€ EUR',
+										callback_data: 'EUR'
+									}
+								],
+								[
+									{
+										text: '£ GBP',
+										callback_data: 'GBP'
+									},
+									{
+										text: 'CFr CHF',
+										callback_data: 'CHF'
+									}
+								],
+								[
+									{
+										text: 'zł PLN',
+										callback_data: 'PLN'
+									},
+									{
+										text: 'Kč CZK',
+										callback_data: 'CZK'
+									}
+								],
+								[
+									{
+										text: '$ CAD',
+										callback_data: 'CAD'
+									},
+									{
+										text: '¥ CNY',
+										callback_data: 'CNY'
+									}
+								]	
+						]
+					}
+				});
+				break;
+			case 'crypto':
+				bot.sendMessage(chatId, 'Choose the currency:', {
+					reply_markup: {
+						inline_keyboard: [
+								[
+									{
+										text: '₿ BTC',
+										callback_data: 'BTC'
+									},
+									{
+										text: '฿ BCH',
+										callback_data: 'BCH'
+									}
+								],
+								[
+									{
+										text: 'Ξ ETH',
+										callback_data: 'ETH'
+									},
+									{
+										text: 'Ł LTC',
+										callback_data: 'LTC'
+									}
+								]
+						]
+					}
+				});
+				break;
+			case 'BTC':
+			case 'BCH':
+			case 'ETH':
+			case 'LTC':
+				var currency = query.data;
+				var token = '2c87938fc0fcc2e25a6b3793796b9d01';
+				request('http://api.coinlayer.com/api/live?access_key=' + token, 
+				function(error, response, body) {
+				const data = JSON.parse(body).rates;
+				var result = Math.round(data[currency] * 100) / 100;
+				let ms = "1 " + currency + ' = ' + result + ' $';
+				bot.sendMessage(chatId, ms);	
+				});
+				break;
+			default:
+				var currency = query.data;
+				request('https://api.exchangeratesapi.io/latest', 
+				function(error, response, body) {
+				const data = JSON.parse(body).rates;
+				if (currency === "EUR") {
+					var result = Math.round(data["RUB"] * 100) / 100;
 				}
-			});
-			break;
-		case 'crypto':
-			bot.sendMessage(chatId, 'Choose the currency:', {
-				reply_markup: {
-					inline_keyboard: [
-							[
-								{
-									text: '₿ BTC',
-									callback_data: 'BTC'
-								},
-								{
-									text: '฿ BCH',
-									callback_data: 'BCH'
-								}
-							],
-							[
-								{
-									text: 'Ξ ETH',
-									callback_data: 'ETH'
-								},
-								{
-									text: 'Ł LTC',
-									callback_data: 'LTC'
-								}
-							]
-					]
+				else {
+					var result = Math.round(data["RUB"]/data[currency] * 100) / 100;
 				}
-			});
-			break;
-		case 'BTC':
-		case 'BCH':
-		case 'ETH':
-		case 'LTC':
-			var currency = query.data;
-			var token = '2c87938fc0fcc2e25a6b3793796b9d01';
-			request('http://api.coinlayer.com/api/live?access_key=' + token, 
-			function(error, response, body) {
-			const data = JSON.parse(body).rates;
-			var result = Math.round(data[currency] * 100) / 100;
-			let ms = "1 " + currency + ' = ' + result + ' $';
-			bot.sendMessage(chatId, ms);	
-    		});
-			break;
-		default:
-			var currency = query.data;
-			request('https://api.exchangeratesapi.io/latest', 
-			function(error, response, body) {
-			const data = JSON.parse(body).rates;
-			if (currency === "EUR") {
-				var result = Math.round(data["RUB"] * 100) / 100;
-			}
-			else {
-				var result = Math.round(data["RUB"]/data[currency] * 100) / 100;
-			}
-			let ms = "1 " + currency + ' = ' + result + ' ₽';
-			bot.sendMessage(chatId, ms);
-    		});
-	}	
+				let ms = "1 " + currency + ' = ' + result + ' ₽';
+				bot.sendMessage(chatId, ms);
+				});
+		}	
+	});
 });
 
 bot.on("polling_error", (err) => console.log(err));
