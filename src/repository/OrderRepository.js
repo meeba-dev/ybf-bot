@@ -1,7 +1,7 @@
 const Order = require('../models/Order');
 
 module.exports = {
-    createOrder, removeOrders, showOrders
+    createOrder, removeOrders
 }
 
 function createOrder(orderData, customer) {
