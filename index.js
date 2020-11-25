@@ -23,45 +23,123 @@ logStart();
 
 
 const {debug} = require('./src/external');
-const {splitStr} = require('./src/external');
-const { query } = require('express');
+const { createOrder } = require('./src/repository/OrderRepository');
+const { removeOrders } = require('./src/repository/OrderRepository');
+const { showOrders } = require('./src/repository/OrderRepository');
 
+const mongoose = require('mongoose');
+const config = require('./src/config.json');
 
-//const mongoose = require('mongoose');
-/*
-mongoose.connect(config.DB_URL, {
-	useMongoClient: true
-})
-	.then(() => console.log('MongoDB connected'))
-	.catch((err) => console.log(err));
-*/
+mongoose.connect(process.env.DB_URL || config.DB_URL, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true
+}).then(() => console.log('MongoDB connected'))
+  .catch((err) => console.log(err));
+
+const keyboard_start = [
+	[
+		{
+			text: 'Add',
+			callback_data: 'add'
+		},
+		{
+			text: 'Send',
+			callback_data: 'send'
+		}
+	],
+	[
+		{
+			text: 'Show',
+			callback_data: 'show'
+		},
+		{
+			text: 'Remove',
+			callback_data: 'remove'
+		}
+	]
+]
+const keyboard_exchange = [
+	[
+		{
+			text: 'FIAT',
+			callback_data: 'fiat',
+		},
+		{
+			text: 'CRYPTO',
+			callback_data: 'crypto'
+		}
+	]
+]
+const keyboard_fiat = [
+	[
+		{
+			text: '$ USD',
+			callback_data: 'USD'
+		},
+		{
+			text: '€ EUR',
+			callback_data: 'EUR'
+		}
+	],
+	[
+		{
+			text: '£ GBP',
+			callback_data: 'GBP'
+		},
+		{
+			text: 'CFr CHF',
+			callback_data: 'CHF'
+		}
+	],
+	[
+		{
+			text: 'zł PLN',
+			callback_data: 'PLN'
+		},
+		{
+			text: 'Kč CZK',
+			callback_data: 'CZK'
+		}
+	],
+	[
+		{
+			text: '$ CAD',
+			callback_data: 'CAD'
+		},
+		{
+			text: '¥ CNY',
+			callback_data: 'CNY'
+		}
+	]	
+]
+const keyboard_crypto = [
+	[
+		{
+			text: '₿ BTC',
+			callback_data: 'BTC'
+		},
+		{
+			text: '฿ BCH',
+			callback_data: 'BCH'
+		}
+	],
+	[
+		{
+			text: 'Ξ ETH',
+			callback_data: 'ETH'
+		},
+		{
+			text: 'Ł LTC',
+			callback_data: 'LTC'
+		}
+	]
+]
 
 bot.onText(/\/start/, (msg) => {
 	bot.sendMessage(msg.chat.id, "Hello " + msg.from.first_name + ". " + "I'm U the Bot." + "\n")
 	bot.sendMessage(msg.chat.id, "Select the command: ", {
 		reply_markup: {
-			inline_keyboard: [
-					[
-						{
-							text: 'Create',
-							callback_data: 'create'
-						},
-						{
-							text: 'Send',
-							callback_data: 'send'
-						}
-					],
-					[
-						{
-							text: 'Show',
-							callback_data: 'show'
-						},
-						{
-							text: 'Remove',
-							callback_data: 'remove'
-						}
-					]
-			]
+			inline_keyboard: keyboard_start
 		}
 	});
 });
@@ -93,18 +171,7 @@ bot.on('message', msg => {
 bot.onText(/\/exchange/, (msg) => {
 	bot.sendMessage(msg.chat.id, 'Choose the type:', {
 		reply_markup: {
-			inline_keyboard: [
-				[
-					{
-						text: 'FIAT',
-						callback_data: 'fiat',
-					},
-					{
-						text: 'CRYPTO',
-						callback_data: 'crypto'
-					}
-				]
-			]
+			inline_keyboard: keyboard_exchange
 		}
 	});
 });
@@ -113,112 +180,42 @@ bot.onText(/\/finish/, (msg) => {
 	bot.sendMessage(msg.chat.id, "See you later Master!");
 });
 
-bot.on('callback_query', function(callbackQuery) {
-	bot.answerCallbackQuery(callbackQuery.id).then(function () {
+bot.on('callback_query', function(query) {
 		const chatId = query.message.chat.id;
-		
+		const user = query.message.chat.first_name;
+
 		switch(query.data) {
-			case 'create':
-				bot.sendMessage(chatId, 'Create' + '\n' + "Sorry, it's under construction");
-				/*
-				bot.sendMessage(chatId, 'Enter by scheme: {Product, Quantity, Weight}')
+			case 'add':
+				bot.sendMessage(chatId, 'Enter the data of order by using next format:' +
+				 '\n' + "{ Name Quantity Weight }");
 				bot.onText(/(.+)/, (msg, [source, match]) => {
-					userInput = match;
-					var str = userInput.split(" ");
-					n = str[0];
-					q = str[1];
-					w = str[2];
-					var json = {name: str[0], quantity: str[1], weight: str[2]};
-					orders.push(json);
-					bot.sendMessage(chatId, orders.length);
-				});	
-				*/
+					var inputOrder = msg.text;
+					var customer = msg.from.first_name;
+					createOrder(inputOrder, customer);
+				})
 				break;		
 			case 'show':
-				bot.sendMessage(chatId, 'Show' + '\n' + "Sorry, it's under construction");
+				bot.sendMessage(chatId, 'Sorry, it\'s under construction');
 				break;
 			case 'remove':
-				bot.sendMessage(chatId, 'Remove' + '\n' + "Sorry, it's under construction");
-				//orders = [];
-				//console.log('Current size is: ' + orders.length);
-				//bot.sendMessage(chatId, 'Shopping list was removed');
+				var customer = user;
+				removeOrders(customer);
+				bot.sendMessage(chatId, 'Your grocery list was successfully removed!')
 				break;
 			case 'send':
-				bot.sendMessage(chatId, 'Send' + '\n' + "Sorry, it's under construction");
+				bot.sendMessage(chatId, 'Sorry, it\'s under construction');
 				break;
 			case 'fiat':
 				bot.sendMessage(chatId, 'Choose the currency:', {
 					reply_markup: {
-						inline_keyboard: [
-								[
-									{
-										text: '$ USD',
-										callback_data: 'USD'
-									},
-									{
-										text: '€ EUR',
-										callback_data: 'EUR'
-									}
-								],
-								[
-									{
-										text: '£ GBP',
-										callback_data: 'GBP'
-									},
-									{
-										text: 'CFr CHF',
-										callback_data: 'CHF'
-									}
-								],
-								[
-									{
-										text: 'zł PLN',
-										callback_data: 'PLN'
-									},
-									{
-										text: 'Kč CZK',
-										callback_data: 'CZK'
-									}
-								],
-								[
-									{
-										text: '$ CAD',
-										callback_data: 'CAD'
-									},
-									{
-										text: '¥ CNY',
-										callback_data: 'CNY'
-									}
-								]	
-						]
+						inline_keyboard: keyboard_fiat
 					}
 				});
 				break;
 			case 'crypto':
 				bot.sendMessage(chatId, 'Choose the currency:', {
 					reply_markup: {
-						inline_keyboard: [
-								[
-									{
-										text: '₿ BTC',
-										callback_data: 'BTC'
-									},
-									{
-										text: '฿ BCH',
-										callback_data: 'BCH'
-									}
-								],
-								[
-									{
-										text: 'Ξ ETH',
-										callback_data: 'ETH'
-									},
-									{
-										text: 'Ł LTC',
-										callback_data: 'LTC'
-									}
-								]
-						]
+						inline_keyboard: keyboard_crypto
 					}
 				});
 				break;
@@ -251,8 +248,9 @@ bot.on('callback_query', function(callbackQuery) {
 				bot.sendMessage(chatId, ms);
 				});
 		}	
-	});
 });
+
+
 
 bot.on("polling_error", (err) => console.log(err));
 
