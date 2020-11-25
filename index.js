@@ -5,36 +5,35 @@ const http = require('http');
 const fs = require('fs');
 const request = require('request');
 const {logStart} = require('./src/external');
+const mongoose = require('mongoose');
 
-var configPrivate;
 var bot;
 if (process.env.TELEGRAM_TOKEN) {
   	bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {
     	polling: true
-  });
+	});
+	mongoose.connect(process.env.DB_URL, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	}).then(() => console.log('MongoDB connected'))
+	  .catch((err) => console.log(err));
 } 
 else {
-	configPrivate = JSON.parse(fs.readFileSync('src/config.json'));
-	bot = new TelegramBot(configPrivate.TELEGRAM_TOKEN, {
+	const config = require('./src/config.json');
+	bot = new TelegramBot(config.TELEGRAM_TOKEN, {
 		polling: true
 	});
+	mongoose.connect(config.DB_URL, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true
+	}).then(() => console.log('MongoDB connected'))
+	  .catch((err) => console.log(err));
 }
 logStart();
-
 
 const {debug} = require('./src/external');
 const { createOrder } = require('./src/repository/OrderRepository');
 const { removeOrders } = require('./src/repository/OrderRepository');
-const { showOrders } = require('./src/repository/OrderRepository');
-
-const mongoose = require('mongoose');
-const config = require('./src/config.json');
-
-mongoose.connect(process.env.DB_URL || config.DB_URL, {
-	useNewUrlParser: true,
-	useUnifiedTopology: true
-}).then(() => console.log('MongoDB connected'))
-  .catch((err) => console.log(err));
 
 const keyboard_start = [
 	[
