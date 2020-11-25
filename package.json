@@ -24,7 +24,7 @@
     "live-server": "^1.2.1",
     "liveserver": "^0.1.20",
     "mongoose": "^5.9.28",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "node-telegram-bot-api": "^0.50.0",
     "request": "^2.88.2",
     "require": "^2.4.20",
