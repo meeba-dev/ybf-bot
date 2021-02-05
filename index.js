@@ -2,7 +2,6 @@
 
 const TelegramBot = require('node-telegram-bot-api');
 const http = require('http');
-const fs = require('fs');
 const request = require('request');
 const {logStart} = require('./src/external');
 const mongoose = require('mongoose');
@@ -31,9 +30,7 @@ else {
 }
 logStart();
 
-const {debug} = require('./src/external');
-const { createOrder } = require('./src/repository/OrderRepository');
-const { removeOrders } = require('./src/repository/OrderRepository');
+const { createOrder, removeOrders, showOrders } = require('./src/repository/OrderRepository');
 
 const keyboard_start = [
 	[
@@ -124,12 +121,32 @@ const keyboard_crypto = [
 	],
 	[
 		{
+			text: 'DASH',
+			callback_data: 'DSH'
+		},
+		{
+			text: 'Dogecoin',
+			callback_data: 'DOGE'
+		}
+	],
+	[
+		{
 			text: 'Ξ ETH',
 			callback_data: 'ETH'
 		},
 		{
 			text: 'Ł LTC',
 			callback_data: 'LTC'
+		}
+	],
+	[
+		{
+			text: 'Ripple',
+			callback_data: 'XRP'
+		},
+		{
+			text: 'Stellar',
+			callback_data: 'XLM'
 		}
 	]
 ]
@@ -161,7 +178,9 @@ bot.onText(/\/echo (.+)/, (msg, [source, match]) => {
 	const response = match;
 	bot.sendMessage(chatId, response);
 });
+
 /*
+const {debug} = require('./src/external');
 bot.on('message', msg => {
 	const {id} = msg.chat;
 	bot.sendMessage(id, debug(msg));
@@ -194,7 +213,9 @@ bot.on('callback_query', function(query) {
 				})
 				break;		
 			case 'show':
-				bot.sendMessage(chatId, 'Sorry, it\'s under construction');
+				//bot.sendMessage(chatId, 'Sorry, it\'s under construction');
+				var customer = user;
+				showOrders(customer, query);
 				break;
 			case 'remove':
 				var customer = user;
@@ -220,16 +241,21 @@ bot.on('callback_query', function(query) {
 				break;
 			case 'BTC':
 			case 'BCH':
+			case 'DSH':
+			case 'DOGE':
 			case 'ETH':
+			case 'GRT':
 			case 'LTC':
+			case 'XRP':
+			case 'XLM':
 				var currency = query.data;
 				var token = '2c87938fc0fcc2e25a6b3793796b9d01';
 				request('http://api.coinlayer.com/api/live?access_key=' + token, 
 				function(error, response, body) {
-				const data = JSON.parse(body).rates;
-				var result = Math.round(data[currency] * 100) / 100;
-				let ms = "1 " + currency + ' = ' + result + ' $';
-				bot.sendMessage(chatId, ms);	
+					const data = JSON.parse(body).rates;
+					var result = Math.round(data[currency] * 100) / 100;
+					let ms = "1 " + currency + ' = ' + result + ' $';
+					bot.sendMessage(chatId, ms);	
 				});
 				break;
 			default:

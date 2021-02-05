@@ -1,7 +1,7 @@
 const Order = require('../models/Order');
 
 module.exports = {
-    createOrder, removeOrders
+    createOrder, removeOrders, showOrders
 }
 
 function createOrder(orderData, customer) {
@@ -18,4 +18,15 @@ function removeOrders(customer) {
         if (err) console.log('error', err);
         else console.log('all orders were removed');
     });
+}
+
+function showOrders(customer, query) {
+    //Order.find({customer: customer}, {$multi: true}, function (err) {
+    Order.aggregate([ 
+        { $match: { customer: customer} }, 
+        { total: { $sum: "$amount" } }, function (err) {
+            if (err) console.log('error', err);
+            else console.log(customer);
+        }  
+    ]);
 }
