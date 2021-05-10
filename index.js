@@ -250,7 +250,7 @@ bot.on('callback_query', function(query) {
 			case 'XLM':
 				var currency = query.data;
 				var token = 'bba288436a333d1e6298416bd21d2ca9';
-				request('http://api.currencylayer.com/live?access_key=' + token, 
+				request('http://apilayer.net/api/live?access_key=' + token, 
 				function(error, response, body) {
 					const data = JSON.parse(body).rates;
 					var result = Math.round(data[currency] * 100) / 100;
@@ -260,7 +260,7 @@ bot.on('callback_query', function(query) {
 				break;
 			default:
 				var currency = query.data;
-				request('http://api.currencylayer.com/latest', 
+				request('http://apilayer.net/latest', 
 				function(error, response, body) {
 				const data = JSON.parse(body).rates;
 				if (currency === "EUR") {
