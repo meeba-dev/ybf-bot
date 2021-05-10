@@ -249,8 +249,8 @@ bot.on('callback_query', function(query) {
 			case 'XRP':
 			case 'XLM':
 				var currency = query.data;
-				var token = '2c87938fc0fcc2e25a6b3793796b9d01';
-				request('http://api.coinlayer.com/api/live?access_key=' + token, 
+				var token = 'bba288436a333d1e6298416bd21d2ca9';
+				request('http://api.currencylayer.com/live?access_key=' + token, 
 				function(error, response, body) {
 					const data = JSON.parse(body).rates;
 					var result = Math.round(data[currency] * 100) / 100;
@@ -260,7 +260,7 @@ bot.on('callback_query', function(query) {
 				break;
 			default:
 				var currency = query.data;
-				request('https://api.exchangeratesapi.io/latest', 
+				request('http://api.currencylayer.com/latest', 
 				function(error, response, body) {
 				const data = JSON.parse(body).rates;
 				if (currency === "EUR") {
